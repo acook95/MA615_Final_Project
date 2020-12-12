@@ -1,0 +1,130 @@
+---
+title: "MA615 Final Project: Job Board Text Analysis"
+author: "Anna Cook"
+date: "12/13/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(jsonlite)
+library(tidyr)
+library(tidytext)
+library(dplyr)
+library(wordcloud)
+library(ggplot2)
+library(kableExtra)
+library(knitr)
+```
+
+# Introduction
+
+The purpose of this project is to analyze words frequently used in data science job postings. This is important because, as a graduate student in statistical practice, myself and many of my peers will soon begin applying for jobs. There are many job sites to search and apply for data science jobs, so much so that it can be overwhelming to narrow down the search to find exactly the right jobs. In this analysis, I will determine and compare common words that are used in job descriptions on several popular job sites. This will allow me to identify important key words to use in my online job search in the future. 
+
+# Data Collection/Description/Processing
+
+The data was collected from three different job board sites: Adzuna, Github Jobs, and The Muse. For each website, a job search was conducting use "data science" as a key phrase, United States as the location, and the results were filtered to include only full-time jobs. The results were then downloaded using the jsonlite R package. 
+
+From the downloaded text files, I extracted only the job descriptions, and excluded all other information including job titles, salary, and location. I then manipulated the data frame to turn it into a tidy text format, with individual words being used as tokens. From these new tidy text dataframes, I created three tables, one for each website, showing each word and the number of times it was used in a job description on that site (see Table 1). These tables will be visualized and further analyzed below. 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+Adzuna_file <- jsonlite::fromJSON("https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=018d3e05&app_key=c61bad16e0597343a3b672a6984062a8&results_per_page=100&what_phrase=data%20science&full_time=1", flatten=TRUE)
+adzuna <- Adzuna_file$results
+tidy_adzuna <- adzuna %>% unnest_tokens(word, description) %>% anti_join(stop_words)
+Github_Jobs_file <- jsonlite::fromJSON("https://jobs.github.com/positions.json?utf8=%E2%9C%93&description=data+science&location=usa&full_time=on", flatten=TRUE)
+github <- Github_Jobs_file
+tidy_github <- github %>% unnest_tokens(word, description) %>% anti_join(stop_words) %>%
+  filter(word != "li" & word != "ul")
+Muse_file <- jsonlite::fromJSON("https://www.themuse.com/api/public/jobs?category=Data%20Science&page=1", flatten=TRUE)
+muse <- Muse_file$results
+tidy_muse <- muse %>% unnest_tokens(word, contents) %>% anti_join(stop_words) %>% filter(word != "li" & word != "br" & word != "de" & word != "ul" & word != "ml")
+
+tidy_a_count <- tidy_adzuna %>% count(word, sort = TRUE)
+
+tidy_g_count <- tidy_github %>% count(word, sort = TRUE)
+
+tidy_m_count <- tidy_muse %>% count(word, sort = TRUE)
+
+
+knitr::kable(list(head(tidy_a_count), head(tidy_g_count), head(tidy_m_count)), caption = "Most frequent words for each job board: Adzuna, Github Jobs, and The Muse, respectively") 
+#%>% add_header_above(c("Adzuna", "Github Jobs", "The Muse"))
+```
+
+# Word Frequency Visualizations
+
+For this project, I created two types of visualizations for the word frequencies in job descriptions on each job board site: histograms and wordclouds. 
+
+## Histograms
+
+The first way I chose to visualize the word frequencies was through a series of histograms. First, I created histograms for the top 20 most frequently used words from each of the three websites. Then, I combined the three data frames and created a histogram for only the words which were common across all three websites. Each of these histograms are shown below.  
+
+### Adzuna
+
+From the histogram for the Adzuna website, we can see that "strong" is the most frequently used word by a long shot, followed by "data" and "scientist" (see Figure _) This finding leads me to speculate that the job postings on Adzuna are likely to appeal to more experienced candidates with a lot of very strong skills. "Data" and "scientist" are unsurprising words to be used frequently, since the job search included "data science" as a key phrase. The other words are used much less frequently than these three, but are important to take note of nonetheless. 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="20 most frequent words used in job description on Adzuna job board website."}
+adzuna_count <- tidy_adzuna %>% count(word, sort = TRUE)
+adzuna_count <- adzuna_count[1:20,]
+ggplot(data = adzuna_count, aes(x = word, y = n)) + geom_col() + ylab("Frequency") + 
+  ggtitle("Most Common Job Description Words on Adzuna") + 
+  theme(axis.text.x = element_text(angle = 45))
+```
+
+### Github Jobs
+
+From the histogram for Github Jobs, we can see that the frequency counts for these words are lower, which makes sense since the initial job search turned up fewer results than that of the other websites. The most commonly used word is "data," followed by "experience," "strong," and "team." This suggests that the job postings on github tend to appeal to candidates who have lots of experience and strong skills working with data, and are looking for candidates who work well in teams. The word "teams" is particuarly a good one to make note of, because as a candidate, I could incorporate into an application or resume that I'm a good team player and collaborate well with others.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="20 most frequent words used in job description on Github Jobs website."}
+github_count <- tidy_github %>% count(word, sort = TRUE)
+github_count <- github_count[1:20,]
+ggplot(data = github_count, aes(x = word, y = n)) + geom_col() + ylab("Frequency") + 
+  ggtitle("Most Common Job Description Words on Github Jobs") + 
+  theme(axis.text.x = element_text(angle = 45))
+```
+
+### The Muse
+
+Like Adzuna, the histogram for The Muse shows very high frequencies for the word counts, with the top word being "span." This finding is a bit difficult to interpret, and it makes me curious as to why it is used so frequency relative to other words. Other words that appear frequently on this website are "data," "strong," "experience," and "business." Business is a unique and interesting word, and it makes me curious if there are a lot of companies that prefer candidates who have experience in business settings. The other words are similar to the other websites and are unsurprising. 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="20 most frequent words used in job description on The Muse job board website."}
+muse_count <- tidy_muse %>% count(word, sort = TRUE)
+muse_count <- muse_count[1:20,]
+ggplot(data = muse_count, aes(x = word, y = n)) + geom_col() + ylab("Frequency") + 
+  ggtitle("Most Common Job Description Words on The Muse") + 
+  theme(axis.text.x = element_text(angle = 45))
+```
+
+### All Three Sites
+
+The last histogram shows only the words that were in the top 20 of all three websites' most frequently used words. This way, I am able to directly compare the counts of these words across websites. Github Jobs tended to have lower frequencies, but as mentioned previous this is likely explained by this website having fewer results for the job search that was conducted in order to collect the data. Muse and Adzuna show similar counts for most of the words. However, Adzuna had much higher counts for the word "strong," and The Muse had higher counts for the word "experience." It is also important to note that the word "learning" appears in the top 20 for all three websites. This is an important word because it could be applied to familiarity and skills surrounding machine learning, but it could also be in the context of a candidate's ability to learn new skills. Either way, these are both strengths that could be included in a resume or application.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Histogram of words common to all three job board sites' top 20 words used in job descriptions."}
+muse_count$site <- rep("muse", 20)
+github_count$site <- rep("github", 20)
+adzuna_count$site <- rep("adzuna", 20)
+all_count <- rbind(adzuna_count, github_count, muse_count)
+common_words <- filter(all_count, word == "data" | word == "strong" | word == "science" | word == "experience" | word == "team" | word == "learning")
+
+ggplot(data = common_words, aes(x = word, y = n)) + geom_col(aes(fill = site)) + 
+  ylab("Frequency") + ggtitle("Frequencies of Words Common Across all Job Sites")
+
+```
+
+## Wordclouds
+
+Although less informative than histograms, wordclouds are a unique way of visualizing text data, and can come in handy for things like presentations. I created word clouds for common words for each of the three websites. I won't discuss each of these in detail, but it is important to note that the same words that appeared in the combined histogram above, appear in each wordcloud, showing commonality between the two types of visualizations. These wordclouds can also be useful when writing resumes and application as inspiration for important "buzz words" to include in order to appeal to more employers. 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.cap= "Wordcloud for frequently used words on Adzuma", fig.align="center"}
+tidy_adzuna %>% count(word) %>% with(wordcloud(word, n, max.words = 50))
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Wordcloud for frequently used words on Github Jobs", fig.align="center"}
+tidy_github %>% count(word) %>% with(wordcloud(word, n, max.words = 50))
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Wordcloud for frequently used words on The Muse", fig.align="center"}
+tidy_muse %>% count(word) %>% with(wordcloud(word, n, max.words = 50))
+```
+
+
+# Discussion
