@@ -4,6 +4,8 @@ library(tidytext)
 library(dplyr)
 library(wordcloud)
 library(ggplot2)
+library(knitr)
+library(kableExtra)
 
 ### Set up
 ## Adzuna
@@ -14,15 +16,13 @@ tidy_adzuna <- adzuna %>% unnest_tokens(word, description) %>% anti_join(stop_wo
 
 ## Github jobs
 # 8 results, jobs in us, full time, data science
-# https://jobs.github.com/positions?utf8=%E2%9C%93&description=data+analyst&location=&full_time=on
-# https://jobs.github.com/positions?utf8=%E2%9C%93&description=data+science&location=usa&full_time=on
 Github_Jobs_file <- jsonlite::fromJSON("https://jobs.github.com/positions.json?utf8=%E2%9C%93&description=data+science&location=usa&full_time=on", flatten=TRUE)
 github <- Github_Jobs_file
 tidy_github <- github %>% unnest_tokens(word, description) %>% anti_join(stop_words) %>%
   filter(word != "li" & word != "ul")
 
 ## The muse
-# https://www.themuse.com/api/public/jobs?category=Data%20Science&page=1
+# jobs in us, full time, data science
 Muse_file <- jsonlite::fromJSON("https://www.themuse.com/api/public/jobs?category=Data%20Science&page=1", flatten=TRUE)
 muse <- Muse_file$results
 tidy_muse <- muse %>% unnest_tokens(word, contents) %>% anti_join(stop_words) %>% filter(word != "li" & word != "br" & word != "de" & word != "ul" & word != "ml")
@@ -70,7 +70,7 @@ ggplot(data = muse_count, aes(x = word, y = n)) + geom_col() + ylab("Frequency")
 
 
 ### comparing counts of common words
-# data, strong, science, experience, team
+# data, strong, science, experience, team, learning
 muse_count$site <- rep("muse", 20)
 github_count$site <- rep("github", 20)
 adzuna_count$site <- rep("adzuna", 20)

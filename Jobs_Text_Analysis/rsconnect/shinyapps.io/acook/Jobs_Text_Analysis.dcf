@@ -1,0 +1,12 @@
+name: Jobs_Text_Analysis
+title: Jobs_Text_Analysis
+username:
+account: acook
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3394036
+bundleId: 3981116
+url: https://acook.shinyapps.io/Jobs_Text_Analysis/
+when: 1607826846.88194
+asMultiple: FALSE
+asStatic: FALSE
