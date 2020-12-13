@@ -81,3 +81,15 @@ ggplot(data = common_words, aes(x = word, y = n)) + geom_col(aes(fill = site)) +
   ylab("Frequency") + ggtitle("Frequencies of Words Common Across all Job Sites")
 
 
+### citations
+citation("jsonlite")
+citation("tidyr")
+citation("tidytext")
+citation("dplyr")
+citation("wordcloud")
+citation("ggplot2")
+citation("knitr")
+citation("kableExtra")
+
+
+

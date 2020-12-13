@@ -1,0 +1,12 @@
+name: jobs_text_analysis
+title: Jobs_Text_Analysis
+username: annacook
+account: annacook
+server: bu-rstudio-connect.bu.edu
+hostUrl: https://bu-rstudio-connect.bu.edu/__api__
+appId: 23
+bundleId: 62
+url: https://bu-rstudio-connect.bu.edu/content/23/
+when: 1607877387.9194
+asMultiple: FALSE
+asStatic: FALSE
